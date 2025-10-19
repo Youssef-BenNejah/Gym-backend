@@ -1,20 +1,19 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { json, urlencoded } from 'express';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+@Module({
+  imports: [
+    // ✅ Load env file first
+    ConfigModule.forRoot(),
 
-  app.use(json({ limit: '300mb' }));
-  app.use(urlencoded({ extended: true, limit: '300mb' }));
+    // ✅ Now we can safely use it
+    MongooseModule.forRoot(process.env.MONGODB_URI as string),
 
-  // ✅ Active CORS pour ton frontend Next.js
-  app.enableCors({
-   origin: true,
-  credentials: true,
-});
-
-  await app.listen(5000);
-  console.log('✅ Backend NestJS sur http://localhost:5000');
-}
-bootstrap();
+    AuthModule,
+    UsersModule,
+  ],
+})
+export class AppModule {}
